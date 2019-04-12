@@ -50,7 +50,47 @@ UPDATE actor SET first_name = 'HARPO' WHERE first_name = 'groucho' and last_name
 SELECT * FROM actor
 WHERE first_name = 'Harpo' AND last_name = 'WILLIAMS';
 
--- 4D. Edit field 'Harpo Williams' to 'GROUCHO Williams'
+-- 4d. Edit field 'Harpo Williams' to 'GROUCHO Williams'
 UPDATE actor SET first_name = 'groucho' WHERE first_name = 'Harpo' and last_name = 'williams';
 SELECT * FROM actor
 WHERE first_name = 'groucho' AND last_name = 'WILLIAMS';
+
+-- 5a. Query to re-create schema 'address'
+CREATE SCHEMA address;
+
+-- 6a. Using JOIN to display fist name, last name, and address
+SELECT a.first_name, a.last_name, b.address
+FROM staff a
+INNER JOIN address b
+ON a.address_id = b.address_id;
+
+-- 6b. Using JOIN to display total amount rung up by each staff member in August of 2005
+SELECT a.first_name, a.last_name, SUM(b.amount) AS 'Rental Amount'
+FROM staff a
+INNER JOIN payment b
+ON a.staff_id = b.staff_id
+WHERE b.payment_date >= DATE('2005-08-01') AND b.payment_date <= DATE('2005-08-31')
+GROUP BY b.staff_id;
+
+-- 6c. List each film and the number of actors who are listed for that film.
+SELECT a.film_id, b.title, COUNT(a.actor_id) AS "Actor Count"
+FROM film_actor a
+INNER JOIN film b
+ON a.film_id = b.film_id
+GROUP BY film_id;
+
+-- 6d. How many copies of the film `Hunchback Impossible` exist in the inventory system?
+SELECT a.film_id, a.title, COUNT(b.film_id) AS "Number of copies"
+FROM film a
+INNER JOIN inventory b
+ON a.film_id = b.film_id
+WHERE a.title = "Hunchback Impossible"
+GROUP BY film_id;
+
+-- 6e. Total Paid by each customer
+SELECT a.first_name, a.last_name, SUM(b.amount) AS "Total Paid"
+FROM customer a
+INNER JOIN payment b
+ON a.customer_id = b.customer_id
+GROUP BY a.customer_id
+ORDER BY a.last_name;
