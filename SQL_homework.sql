@@ -94,3 +94,94 @@ INNER JOIN payment b
 ON a.customer_id = b.customer_id
 GROUP BY a.customer_id
 ORDER BY a.last_name;
+
+-- 7a. Use subqueries to display movies start with letters 'K' and 'Q' whose language is English
+SELECT title, language_id FROM film
+WHERE title LIKE "K%" OR title LIKE "Q%"
+AND language_id IN (SELECT language_id FROM language WHERE name = "English");
+
+-- 7b. Use subqueries to display all actors who appear in the film `Alone Trip`.
+SELECT first_name, last_name FROM actor
+WHERE actor_id IN
+(SELECT actor_id FROM film_actor
+WHERE film_id IN 
+(SELECT film_id FROM film
+WHERE title = "Alone Trip"));
+
+-- 7c. Use JOIN to list names and email addresses for all Canadian customers
+SELECT first_name, last_name, email FROM customer WHERE address_id IN
+(SELECT address_id FROM address WHERE city_id IN
+(SELECT city_id FROM city WHERE country_id IN 
+(SELECT country_id FROM country WHERE country = "Canada")));
+
+-- 7d. Identify all movies categorized as _family_ films
+SELECT * FROM film WHERE film_id IN
+(SELECT film_id FROM film_category WHERE category_id IN
+(SELECT category_id FROM category WHERE name = "Family"));
+
+-- 7e. Display the most frequently rented movies in descending order.
+SELECT a.title, COUNT(c.inventory_id) AS "Count of rental"
+FROM film a
+JOIN inventory b
+ON a.film_id = b.film_id
+JOIN rental c
+ON b.inventory_id = c.inventory_id
+GROUP BY a.title
+ORDER BY COUNT(c.inventory_id) DESC;
+
+-- 7f. Write a query to display how much business, in dollars, each store brought in.
+SELECT a.store_id, SUM(b.amount) AS "Rental Amount"
+FROM payment b
+INNER JOIN store a
+ON a.manager_staff_id = b.staff_id
+GROUP BY staff_id;
+
+-- 7g. Write a query to display for each store its store ID, city, and country.
+SELECT a.store_id, c.city, d.country
+FROM store a
+JOIN address b
+ON a.address_id = b.address_id
+JOIN city c
+ON b.city_id = c.city_id
+JOIN country d
+ON c.country_id = d.country_id
+GROUP BY store_id;
+
+-- 7h. List the top five genres in gross revenue in descending order.
+SELECT a.name, SUM(e.amount) AS "Total Rental Amount"
+FROM category a
+JOIN film_category b
+ON a.category_id = b.category_id
+JOIN inventory c
+ON b.film_id = c.film_id
+JOIN rental d
+ON c.inventory_id = d.inventory_id
+JOIN payment e
+ON d.rental_id = e.rental_id
+GROUP BY a.name
+ORDER BY SUM(e.amount) DESC
+LIMIT 5;
+
+-- 8a. Create view for top 5 category by gross revenue
+CREATE VIEW Top_5_Category AS
+SELECT a.name, SUM(e.amount) AS "Total Rental Amount"
+FROM category a
+JOIN film_category b
+ON a.category_id = b.category_id
+JOIN inventory c
+ON b.film_id = c.film_id
+JOIN rental d
+ON c.inventory_id = d.inventory_id
+JOIN payment e
+ON d.rental_id = e.rental_id
+GROUP BY a.name
+ORDER BY SUM(e.amount) DESC
+LIMIT 5;
+
+-- 8b. How would you display the view that you created in 8a?
+-- -- In Navigator panel, select Views, select top_5_category, right_click, choose option Select Rows or use below query.
+SELECT * FROM sakila.top_5_category;
+
+-- 8c. Delete view Top_5_Category
+DROP VIEW Top_5_Category;
+
